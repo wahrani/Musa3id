@@ -476,12 +476,12 @@ $.when(mw.loader.using(["mediawiki.user", "oojs-ui-core", "oojs-ui-windows", 'me
                     align: 'inline',
                 }),
                 copyVioField = new OO.ui.FieldLayout(copyVioInput = new OO.ui.TextInputWidget({
-                    placeholder: 'Violated URL',
+                    placeholder: 'عنوان الصفحة الأصلية (URL)',
                     value: '',
                     data: 'COV',
                     classes: ['Musa3id-copvio-input'],
                 }), {
-                    label: 'URL',
+                    label: 'الأصلي',
                     align: 'inline',
                     classes: ['Musa3id-copvio-container'],
                 }),
