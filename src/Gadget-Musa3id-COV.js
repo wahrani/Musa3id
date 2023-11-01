@@ -3,6 +3,7 @@
  * Author: وهراني (Wahrani)
  * licensed under the Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) and GNU Free Documentation License (GFDL).
  * Module: Copyright checker
+ * Earwig's Copyvio Detector (https://copyvios.toolforge.org/) api used in MediaWiki:Gadget-Musa3id-COV.js
 /* <nowiki> */
 $.when(mw.loader.using(["mediawiki.user", "oojs-ui-core", "oojs-ui-windows", ]), $.ready).then(function() {
     var mwConfig = mw.config.get(["wgAction", "wgPageName", "wgTitle", "wgUserGroups", "wgUserName", "wgCanonicalNamespace", "wgNamespaceNumber"]);
@@ -13,21 +14,11 @@ $.when(mw.loader.using(["mediawiki.user", "oojs-ui-core", "oojs-ui-windows", ]),
     var progressBar = new OO.ui.ProgressBarWidget({
         progress: false
     });
-    var cancelButton = new OO.ui.ButtonWidget({
-    label: 'إلغاء',
-    flags: ['destructive'],
-    action: 'cancel'
-    });
     windowManager.openWindow(messageDialog, {
         title: 'التحقق ...',
-        message: progressBar.$element,
-        actions: [cancelButton]
+        message: progressBar.$element
     });
-    var xhr;
-    cancelButton.on('click', function() {
-    xhr.abort();
-    });
-    xhr = $.get("https://copyvios.toolforge.org/api.json?", {
+    $.get("https://copyvios.toolforge.org/api.json?", {
         action: "search",
         lang: "ar",
         project: "wikipedia",
@@ -67,7 +58,12 @@ $.when(mw.loader.using(["mediawiki.user", "oojs-ui-core", "oojs-ui-windows", ]),
                 modes: 'help',
                 label: 'مساعدة',
                 flags: 'safe'
-            }];
+            }, {
+				action: 'analysis',
+				modes: 'edit',
+				label: 'لتفاصيل أكثر ...',
+				framed: false,
+			}];
         } else if (copVioRatio < 10) {
             headerTitle = new OO.ui.MessageWidget({
                 type: 'success',
@@ -75,15 +71,16 @@ $.when(mw.loader.using(["mediawiki.user", "oojs-ui-core", "oojs-ui-windows", ]),
                 label: 'لا خروقات: %' + copVioRatio
             });
             CopyVioDialog.static.actions = [{
-                modes: 'edit',
-                label: 'غلق',
-                flags: 'safe'
-            }, {
-                action: 'back',
-                modes: 'help',
-                label: 'مساعدة',
-                flags: 'safe'
-            }];
+				action: 'close',
+				modes: 'edit',
+				label: 'غلق',
+				flags: 'safe'
+			}, {
+				action: 'analysis',
+				modes: 'edit',
+				label: 'لتفاصيل أكثر ...',
+				framed: false,
+			}];
         } else {
             headerTitle = new OO.ui.MessageWidget({
                 type: 'warning',
@@ -91,15 +88,15 @@ $.when(mw.loader.using(["mediawiki.user", "oojs-ui-core", "oojs-ui-windows", ]),
                 label: 'خروقات محتملة: %' + copVioRatio + ' | لهذه الصفحة مستوى بدرجة قلق منخفظة لخروقات الحقوق،يمكنك حذف المقاطع ذات الحقوق لمعالجة الأمر.'
             });
             CopyVioDialog.static.actions = [{
-                modes: 'edit',
-                label: 'غلق',
-                flags: 'safe'
-            }, {
-                action: 'back',
-                modes: 'help',
-                label: 'مساعدة',
-                flags: 'safe'
-            }];
+				modes: 'edit',
+				label: 'غلق',
+				flags: 'safe'
+			}, {
+				action: 'analysis',
+				modes: 'edit',
+				label: 'لتفاصيل أكثر ...',
+				framed: false,
+			}];
         }
         CopyVioDialog.prototype.initialize = function() {
             CopyVioDialog.super.prototype.initialize.apply(this, arguments);
@@ -158,7 +155,12 @@ $.when(mw.loader.using(["mediawiki.user", "oojs-ui-core", "oojs-ui-windows", ]),
                     dialog.close();
                     mw.loader.load('//ar.wikipedia.org/w/index.php?action=raw&ctype=text/javascript&title=Mediawiki:Gadget-Musa3id-CSD.js');
                 });
-            }
+            } else if(action === 'analysis') {
+				var targetURL = "https://copyvios.toolforge.org/?lang=ar&project=wikipedia&title=" + mwConfig.wgPageName;
+				window.open(targetURL, '_blank');
+			} else if(action === 'close') {
+				this.close();
+			}
             return CopyVioDialog.super.prototype.getActionProcess.call(this, action);
         };
         CopyVioDialog.prototype.getBodyHeight = function() {
